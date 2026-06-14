@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.OrderreceivingDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.task_id as taskId
+        ,a.errands_id as errandsId
+        ,a.orderreceiving_status_types as orderreceivingStatusTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.OrderreceivingView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,task.task_uuid_number as taskUuidNumber
+        ,task.yonghu_id as taskYonghuId
+        ,task.task_name as taskName
+        ,task.task_money as taskMoney
+        ,task.task_status_types as taskStatusTypes
+        ,task.task_content as taskContent
+        ,errands.errands_name as errandsName
+        ,errands.errands_photo as errandsPhoto
+        ,errands.errands_phone as errandsPhone
+        ,errands.errands_email as errandsEmail
+        ,errands.errands_delete as errandsDelete
+
+        FROM orderreceiving  a
+        left JOIN task task ON a.task_id = task.id
+        left JOIN errands errands ON a.errands_id = errands.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.taskId != null and params.taskId != ''">
+                and (
+                    a.task_id = #{params.taskId}
+                )
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and task.yonghu_id = #{params.yonghuId}
+            </if>
+            <if test="params.errandsId != null and params.errandsId != ''">
+                and (
+                a.errands_id = #{params.errandsId}
+                )
+            </if>
+            <if test="params.orderreceivingStatusTypes != null and params.orderreceivingStatusTypes != ''">
+                and a.orderreceiving_status_types = #{params.orderreceivingStatusTypes}
+            </if>
+
+                <!-- 判断任务信息的id不为空 -->
+            <if test=" params.taskIdNotNull != '' and params.taskIdNotNull != null and params.taskIdNotNull != 'null' ">
+                and a.task_id IS NOT NULL
+            </if>
+            <if test=" params.taskUuidNumber != '' and params.taskUuidNumber != null and params.taskUuidNumber != 'null' ">
+                and task.task_uuid_number like CONCAT('%',#{params.taskUuidNumber},'%')
+            </if>
+            <if test=" params.taskName != '' and params.taskName != null and params.taskName != 'null' ">
+                and task.task_name like CONCAT('%',#{params.taskName},'%')
+            </if>
+            <if test="params.taskMoneyStart != null ">
+                <![CDATA[  and task.task_money >= #{params.taskMoneyStart}   ]]>
+            </if>
+            <if test="params.taskMoneyEnd != null ">
+                <![CDATA[  and task.task_money <= #{params.taskMoneyEnd}   ]]>
+            </if>
+            <if test="params.taskStatusTypes != null  and params.taskStatusTypes != ''">
+                and task.task_status_types = #{params.taskStatusTypes}
+            </if>
+
+            <if test=" params.taskContent != '' and params.taskContent != null and params.taskContent != 'null' ">
+                and task.task_content like CONCAT('%',#{params.taskContent},'%')
+            </if>
+            <!-- 判断用户的id不为空 -->
+            <if test=" params.errandsIdNotNull != '' and params.errandsIdNotNull != null and params.errandsIdNotNull != 'null' ">
+                and a.errands_id IS NOT NULL
+            </if>
+            <if test=" params.errandsName != '' and params.errandsName != null and params.errandsName != 'null' ">
+                and errands.errands_name like CONCAT('%',#{params.errandsName},'%')
+            </if>
+            <if test=" params.errandsPhone != '' and params.errandsPhone != null and params.errandsPhone != 'null' ">
+                and errands.errands_phone like CONCAT('%',#{params.errandsPhone},'%')
+            </if>
+            <if test=" params.errandsEmail != '' and params.errandsEmail != null and params.errandsEmail != 'null' ">
+                and errands.errands_email like CONCAT('%',#{params.errandsEmail},'%')
+            </if>
+            <if test="params.errandsDeleteStart != null  and params.errandsDeleteStart != '' ">
+                <![CDATA[  and errands.errands_delete >= #{params.errandsDeleteStart}   ]]>
+            </if>
+            <if test="params.errandsDeleteEnd != null  and params.errandsDeleteEnd != '' ">
+                <![CDATA[  and errands.errands_delete <= #{params.errandsDeleteEnd}   ]]>
+            </if>
+            <if test="params.errandsDelete != null  and params.errandsDelete != '' ">
+                and errands.errands_delete = #{params.errandsDelete}
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc
+    </select>
+
+</mapper>

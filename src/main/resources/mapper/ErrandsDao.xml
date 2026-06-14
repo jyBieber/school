@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ErrandsDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.username as username
+        ,a.password as password
+        ,a.errands_name as errandsName
+        ,a.errands_photo as errandsPhoto
+        ,a.sex_types as sexTypes
+        ,a.errands_phone as errandsPhone
+        ,a.errands_email as errandsEmail
+        ,a.errands_delete as errandsDelete
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ErrandsView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+
+        FROM errands  a
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.username != '' and params.username != null and params.username != 'null' ">
+                and a.username like CONCAT('%',#{params.username},'%')
+            </if>
+            <if test=" params.password != '' and params.password != null and params.password != 'null' ">
+                and a.password like CONCAT('%',#{params.password},'%')
+            </if>
+            <if test=" params.errandsName != '' and params.errandsName != null and params.errandsName != 'null' ">
+                and a.errands_name like CONCAT('%',#{params.errandsName},'%')
+            </if>
+            <if test="params.sexTypes != null and params.sexTypes != ''">
+                and a.sex_types = #{params.sexTypes}
+            </if>
+            <if test=" params.errandsPhone != '' and params.errandsPhone != null and params.errandsPhone != 'null' ">
+                and a.errands_phone like CONCAT('%',#{params.errandsPhone},'%')
+            </if>
+            <if test=" params.errandsEmail != '' and params.errandsEmail != null and params.errandsEmail != 'null' ">
+                and a.errands_email like CONCAT('%',#{params.errandsEmail},'%')
+            </if>
+            <if test="params.errandsDeleteStart != null and params.errandsDeleteStart != ''">
+                <![CDATA[  and a.errands_delete >= #{params.errandsDeleteStart}   ]]>
+            </if>
+            <if test="params.errandsDeleteEnd != null and params.errandsDeleteEnd != ''">
+                <![CDATA[  and a.errands_delete <= #{params.errandsDeleteEnd}   ]]>
+            </if>
+             <if test="params.errandsDelete != null and params.errandsDelete != ''">
+                and a.errands_delete = #{params.errandsDelete}
+             </if>
+
+        </where>
+
+        order by a.${params.orderBy} asc
+    </select>
+
+</mapper>
